@@ -1,0 +1,6 @@
+watchdog
+diffusers[torch]
+chardet
+transformers
+omegaconf
+safetensors
