@@ -3,4 +3,5 @@
 model
 input
 output
+sd-gen.service
 **__pycache__
