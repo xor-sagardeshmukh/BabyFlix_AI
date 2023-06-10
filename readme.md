@@ -3,6 +3,8 @@
 To install just run `sh install.sh`
 it will install all the python dependencies and generate a `sd-gen.service` file.
 
+After running the `install.sh` copy your `model.safetensors` model into the model folder.
+
 copy the generated `sd-gen.service` file to `/etc/systemd/system`
 and then run:
 ```
