@@ -1,11 +1,58 @@
 # StableDifussion Generator Service
+
+## Pre requisites
+The AWS EC2 g5.xlarge machine shoudl have at least 50gb of storage and run Ubuntu 22
+First update all packages by running
+```
+sudo apt update
+sudo apt upgrade
+```
+Then install all the build essentials for the NVIDIA driver installation
+```
+sudo apt install build-essential
+```
+After that, download the NVIDIA CUDA 11.8 and Driver installation script and run it
+```
+wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run
+sudo sh cuda_11.8.0_520.61.05_linux.run
+```
+This installation process will ask you to first write `accept` and then select `install`.
+After the installation is done, you will need to add CUDA to the PATH environment variables. To do this, open the `.bashrc` file and add the following at the end of the file
+```
+export PATH="/usr/local/cuda-11.8/bin:$PATH"
+export LD_LIBRARY_PATH="/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH"
+```
+After that, force a reload of bash by running
+```
+source .bashrc
+```
+This should do for the CUDA installation, to confirm that the installation was succesful run the following command
+```
+nvcc --version
+```
+
+AWS Ubuntu 22 does not come with python virtual environments installed, to install it first confirm which version of python is intalled.
+```
+python3 --version
+```
+If 3.10 is installed, then install the venv package accordingly by running
+```
+sudo apt install python3.10-venv
+```
+
 ## Installation
-To install just run `sh install.sh`
+To install just run 
+```
+sh install.sh
+```
 it will install all the python dependencies and generate a `sd-gen.service` file.
 
 After running the `install.sh` copy your `model.safetensors` model into the model folder.
 
 copy the generated `sd-gen.service` file to `/etc/systemd/system`
+```
+sudo cp sd-gen.service /etc/systemd/system/
+```
 and then run:
 ```
 sudo systemctl enable sd-gen
@@ -15,6 +62,10 @@ sudo systemctl start sd-gen
 You can then check if the service is running using
 ```
 sudo systemctl | grep running
+```
+or by looking through the service log using
+```
+sudo journalctl -u sd-gen -n 50 -f
 ```
 
 ## Execution
@@ -45,3 +96,6 @@ To uninstall the service just stop the service
 sudo systemctl stop sd-gen
 ```
 and remove the `/etc/systemd/system/sd-gen.service` file.
+```
+sudo rm /etc/systemd/system/sd-gen.service
+```

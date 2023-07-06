@@ -1,4 +1,4 @@
-python -m venv .venv
+python3 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements_cuda.txt
 pip install -r requirements.txt
@@ -24,6 +24,7 @@ exec 3<> sd-gen.service
     echo "SyslogIdentifier = sd-gen.log" >&3
     echo "RestartSec = 5" >&3
     echo "TimeoutStartSec = infinity" >&3
+    echo "WorkingDirectory = $script_path" >&3
     echo "" >&3
     echo "[Install]" >&3
     echo "WantedBy = multi-user.target" >&3
