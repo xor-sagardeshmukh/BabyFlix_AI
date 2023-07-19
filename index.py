@@ -49,9 +49,16 @@ class SdGenService():
             output_folder = os.path.join(
                 Config().output_folder, f"{int(time.time())}-img")
             os.makedirs(output_folder)
+
+            image = Image.open(file_input_path).convert("RGB")
+
+            # Autocrop initial crop
+            if Config().autocrop:
+                rect = image.getbbox()
+                rect = (rect[0]+ Config().crop_margin[0], rect[1]+ Config().crop_margin[1], rect[2]- Config().crop_margin[2], rect[3]- Config().crop_margin[3])
+                image = image.crop(rect) 
             
             # Resize Image to closes 768px
-            image = Image.open(file_input_path).convert("RGB")
             original_width, original_height = image.size
             aspect_ratio = original_width / original_height
             if original_width > original_height:
@@ -61,6 +68,14 @@ class SdGenService():
                 target_height = 768
                 target_width = round(target_height * aspect_ratio)
             resized_image = image.resize((target_width, target_height))
+
+            # Autocrop final crop after resize
+            if Config().autocrop:
+                rect = resized_image.getbbox()
+                rect = (rect[0] + Config().crop_margin_threshold, rect[1] + Config().crop_margin_threshold, rect[2] - Config().crop_margin_threshold, rect[3] - Config().crop_margin_threshold)
+                resized_image = resized_image.crop(rect) 
+                resized_image = image.resize((target_width, target_height))
+
             resized_image.save(os.path.join(output_folder, "resized_src.png"))
 
             # Generate Image Batch

@@ -7,12 +7,16 @@ class Config(metaclass=Singleton):
     model: str
     sampling_method: str
     prompt: str
+    negative_prompt: str
     steps: int
     batch: int
     cfg: float
     denoise: float
     input_folder: str
     output_folder: str
+    autocrop: bool
+    crop_margin = tuple([0, 0, 0, 0])
+    crop_margin_threshold: int
 
     def __init__(self):
         self._config = configparser.ConfigParser()
@@ -26,12 +30,17 @@ class Config(metaclass=Singleton):
             "model", "model/model.safetensors")
         self.prompt = self.get_config(
             "prompt", "newborn portrait close-up in ultrasound, natural colors, ultrasound image of a toddler in natural colorization, medical close-up portrait")
+        self.negative_prompt = self.get_config(
+            "negative-prompt", "cartoon, exagerated, drawing, sketch")
         self.steps = self.get_config("steps", 55)
         self.batch = self.get_config("batch", 2)
         self.cfg = self.get_config("cfg", 10)
         self.denoise = self.get_config("denoise", 0.7)
         self.input_folder = self.get_config("input_folder", "/input")
         self.output_folder = self.get_config("output_folder", "/output")
+        self.autocrop = self.get_config("autocrop", "True") == "True"
+        self.crop_margin = tuple([int(x) for x in self.get_config("crop-margin", "0,0,0,0").split(",")])
+        self.crop_margin_threshold = int(self.get_config("crop-margin-threshold", 0))
         with open("config.ini", "w") as configfile:
             self._config.write(configfile)
 
