@@ -40,9 +40,23 @@ class SdGenService():
     def on_created(self, event):
         file_name = os.path.basename(event.src_path)
         self.pool_executor.submit(self.process_image, file_name)
+    
+    def is_image_filename(filename):
+        # List of common image formats
+        image_formats = ['.png', '.jpg', '.jpeg', '.gif', '.bmp']
+
+        # Get the file extension from the filename
+        file_extension = os.path.splitext(filename)[1].lower()
+
+        # Check if the file extension is in the list of image formats
+        return file_extension in image_formats
 
     def process_image(self, file_name):
         try:
+            # Check if file is image
+            if not self.is_image_filename(file_name):
+                return
+                    
             # Load source image
             print(f"Process Image: {file_name}")
             file_input_path = os.path.join(Config().input_folder, file_name)
