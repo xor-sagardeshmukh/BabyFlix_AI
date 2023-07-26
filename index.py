@@ -5,7 +5,7 @@ import time
 import traceback
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 from modules.config import Config
 from modules.img2img import Img2Img
@@ -102,6 +102,11 @@ class SdGenService():
             file_output_path = os.path.join(output_folder, "src.png")
             if os.path.isfile(file_input_path):
                 shutil.move(file_input_path, file_output_path)
+        except UnidentifiedImageError:
+            print(f"UnidentifiedImageError: {file_name}")
+            print("Retry in 10 seconds...")
+            time.sleep(10)
+            self.process_image(file_name)
         except:
             traceback.print_exc()
 
