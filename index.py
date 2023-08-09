@@ -9,6 +9,7 @@ from PIL import Image, UnidentifiedImageError
 
 from modules.config import Config
 from modules.img2img import Img2Img
+from modules.utils import find_next_available_filename
 
 
 class SdGenService():
@@ -60,9 +61,9 @@ class SdGenService():
             # Load source image
             print(f"Process Image: {file_name}")
             file_input_path = os.path.join(Config().input_folder, file_name)
-            output_folder = os.path.join(
-                Config().output_folder, f"{int(time.time())}-img")
-            os.makedirs(output_folder)
+
+            if not os.path.exists(file_input_path):
+                time.sleep(3)
 
             image = Image.open(file_input_path).convert("RGB")
 
@@ -90,18 +91,24 @@ class SdGenService():
                 resized_image = resized_image.crop(rect) 
                 resized_image = image.resize((target_width, target_height))
 
-            resized_image.save(os.path.join(output_folder, "resized_src.png"))
-
             # Generate Image Batch
             for i in range(1, int(Config().batch)+1):
                 print(f"Image Generate: {i}/{Config().batch}")
-                gen_image = Img2Img().generate(resized_image, output_folder, i)
+                directory, filename = os.path.split(file_name)
+                print(f"Directory: {directory} | Filename: {filename}")
+                name, extension = os.path.splitext(filename)
+                print(f"Name: {name} | Extension: {extension}")
+                output_filepath = os.path.join(Config().output_folder, f"{name}_{i}_{Config().output_postfix}_ai.png")
+                
+                if os.path.exists(output_filepath):
+                    output_filepath = find_next_available_filename(output_filepath)
+
+                gen_image = Img2Img().generate(resized_image, output_filepath)
                 print(f"Image Generated: {gen_image}")
 
-            # Move Source Image to output folder
-            file_output_path = os.path.join(output_folder, "src.png")
+            # Delete source image
             if os.path.isfile(file_input_path):
-                shutil.move(file_input_path, file_output_path)
+                os.remove(file_input_path)
         except UnidentifiedImageError:
             print(f"UnidentifiedImageError: {file_name}")
             print("Retry in 10 seconds...")

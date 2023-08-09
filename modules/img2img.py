@@ -38,12 +38,11 @@ class Img2Img(metaclass=Singleton):
             else:
                 raise Exception("No Model")
 
-    def generate(self, img_src, oputput_folder, index):
+    def generate(self, img_src, output_file):
         seed = random.randint(0, 2147483647)
         generator = torch.Generator(device="cuda").manual_seed(seed)
         print(f"Generate: prompt={Config().prompt} negative prompt={Config().negative_prompt} strength={float(Config().denoise)} guidance_scale={float(Config().cfg)} num_inference_steps={int(Config().steps)} seed={seed}")
         images = self.pipe(prompt=Config().prompt, negative_prompt=Config().negative_prompt, image=img_src,
                            strength=float(Config().denoise), guidance_scale=float(Config().cfg), num_inference_steps=int(Config().steps), generator=generator).images
-        filepath = os.path.join(oputput_folder, f"{index}.png")
-        images[0].save(filepath)
-        return filepath
+        images[0].save(output_file)
+        return output_file

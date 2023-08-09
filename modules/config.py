@@ -14,6 +14,7 @@ class Config(metaclass=Singleton):
     denoise: float
     input_folder: str
     output_folder: str
+    output_postfix: str
     autocrop: bool
     crop_margin = tuple([0, 0, 0, 0])
     crop_margin_threshold: int
@@ -38,6 +39,7 @@ class Config(metaclass=Singleton):
         self.denoise = self.get_config("denoise", 0.7)
         self.input_folder = self.get_config("input_folder", "/input")
         self.output_folder = self.get_config("output_folder", "/output")
+        self.output_postfix = self.get_config("output_postfix", "100")
         self.autocrop = self.get_config("autocrop", "True") == "True"
         self.crop_margin = tuple([int(x) for x in self.get_config("crop-margin", "0,0,0,0").split(",")])
         self.crop_margin_threshold = int(self.get_config("crop-margin-threshold", 0))
