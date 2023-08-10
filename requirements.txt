@@ -4,3 +4,4 @@ chardet
 transformers
 omegaconf
 safetensors
+schedule

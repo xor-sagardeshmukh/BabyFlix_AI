@@ -1,6 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 import os
-import shutil
+import schedule
 import time
 import traceback
 from watchdog.observers import Observer
@@ -13,22 +13,35 @@ from modules.utils import find_next_available_filename
 
 
 class SdGenService():
-    observer = None
     pool_executor = None
     img2img = None
+    workload = []
 
     def __init__(self):
         self.img2img = Img2Img()
-        self.observer = Observer()
-        event_handler = FileSystemEventHandler()
-        event_handler.on_created = self.on_created
-        self.observer.schedule(
-            event_handler, Config().input_folder, recursive=False)
-        self.observer.start()
+        schedule.every(30).seconds.do(self.scan_folder)
 
         self.pool_executor = ThreadPoolExecutor(
             max_workers=1)
-        self.load_work()
+        #self.load_work()
+
+    def scan_folder(self):
+        print("Scanning for new files...")
+        if not os.path.exists(Config().input_folder):
+            os.makedirs(Config().input_folder)
+            return
+        file_list = os.listdir(Config().input_folder)
+        new_workload = 0
+        for file_name in file_list:
+            if file_name not in self.workload:
+                self.workload.append(file_name)
+                self.pool_executor.submit(self.process_image, file_name)
+                print(f"Adding {file_name} to workload queue ({len(self.workload)})")
+                new_workload += 1
+        if new_workload > 0:
+            print(f"Added {new_workload} new files to workload queue ({len(self.workload)})")
+        else:
+            print("No new files found")
 
     def load_work(self):
         if not os.path.exists(Config().input_folder):
@@ -105,7 +118,8 @@ class SdGenService():
 
                 gen_image = Img2Img().generate(resized_image, output_filepath)
                 print(f"Image Generated: {gen_image}")
-
+            # Remove workload
+            self.workload.remove(file_name)
             # Delete source image
             if os.path.isfile(file_input_path):
                 os.remove(file_input_path)
@@ -122,7 +136,7 @@ if __name__ == "__main__":
     service = SdGenService()
     try:
         while True:
+            schedule.run_pending()
             time.sleep(1)
     finally:
-        service.observer.stop()
-        service.observer.join()
+        service.pool_executor.shutdown(wait=False)
