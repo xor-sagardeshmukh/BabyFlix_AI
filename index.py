@@ -3,8 +3,6 @@ import os
 import schedule
 import time
 import traceback
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 from PIL import Image, UnidentifiedImageError
 
 from modules.config import Config
@@ -19,29 +17,28 @@ class SdGenService():
 
     def __init__(self):
         self.img2img = Img2Img()
-        schedule.every(30).seconds.do(self.scan_folder)
+        schedule.every(2).seconds.do(self.scan_folder)
 
         self.pool_executor = ThreadPoolExecutor(
             max_workers=1)
-        #self.load_work()
 
     def scan_folder(self):
-        print("Scanning for new files...")
         if not os.path.exists(Config().input_folder):
             os.makedirs(Config().input_folder)
             return
         file_list = os.listdir(Config().input_folder)
         new_workload = 0
         for file_name in file_list:
+            print("---->>>>>>")
             if file_name not in self.workload:
                 self.workload.append(file_name)
                 self.pool_executor.submit(self.process_image, file_name)
                 print(f"Adding {file_name} to workload queue ({len(self.workload)})")
                 new_workload += 1
+
         if new_workload > 0:
-            print(f"Added {new_workload} new files to workload queue ({len(self.workload)})")
-        else:
-            print("No new files found")
+            print(f"Added {new_workload} new files to workload queue:")
+            print(self.workload)
 
     def load_work(self):
         if not os.path.exists(Config().input_folder):
@@ -137,6 +134,6 @@ if __name__ == "__main__":
     try:
         while True:
             schedule.run_pending()
-            time.sleep(1)
+            time.sleep(3)
     finally:
         service.pool_executor.shutdown(wait=False)

@@ -29,14 +29,12 @@ class Config(metaclass=Singleton):
             self._config.add_section("Settings")
         self.model = self.get_config(
             "model", "model/model.safetensors")
-        self.prompt = self.get_config(
-            "prompt", "newborn portrait close-up in ultrasound, natural colors, ultrasound image of a toddler in natural colorization, medical close-up portrait")
-        self.negative_prompt = self.get_config(
-            "negative-prompt", "cartoon, exagerated, drawing, sketch")
-        self.steps = self.get_config("steps", 55)
+        self.prompt = "baby, infant"
+        self.negative_prompt = ""
+        self.steps = 100
         self.batch = self.get_config("batch", 2)
-        self.cfg = self.get_config("cfg", 10)
-        self.denoise = self.get_config("denoise", 0.7)
+        self.cfg = 12
+        self.denoise = 0.5
         self.input_folder = self.get_config("input_folder", "/input")
         self.output_folder = self.get_config("output_folder", "/output")
         self.output_postfix = self.get_config("output_postfix", "100")
@@ -59,3 +57,4 @@ class Config(metaclass=Singleton):
 
 
 Config()
+
